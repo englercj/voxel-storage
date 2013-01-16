@@ -1,0 +1,12 @@
+# Emacs stuffs
+*~
+\#*#
+
+# Sublime Text 2 stuffs
+*.sublime-*
+
+# Node stuffs
+node_modules/
+
+# Build stuffs
+dist

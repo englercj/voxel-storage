@@ -1,0 +1,31 @@
+{
+    "name" : "voxel-storage",
+    "version" : "0.0.1",
+    "description" : "store voxel worlds locally with IndexedDB",
+    "main" : "index.js",
+    "dependencies" : {
+        "idb-wrapper": "0.3.x",
+        "voxel": "0.0.x"
+    },
+    "devDependencies" : {
+        "browserify" : "~1.17.1",
+        "voxel-engine" : "0.1.9"
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "git://github.com/englercj/voxel-storage.git"
+    },
+    "homepage" : "https://github.com/englercj/voxel-storage",
+    "keywords" : [
+        "voxel",
+        "game",
+        "webgl",
+        "three.js"
+    ],
+    "author" : {
+        "name" : "Chad Engler",
+        "email" : "chat@pantherdev.com",
+        "url" : "http://chat.pantherdev.com"
+    },
+    "license" : "MIT"
+}
