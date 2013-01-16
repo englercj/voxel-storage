@@ -1,7 +1,11 @@
-var voxel = require('voxel'),
+var events = require('events'),
+    util = require('util'),
+    voxel = require('voxel'),
     IDBStore = require('idb-wrapper');
 
 var Storage = module.exports = function(opts) {
+    events.EventEmitter.call(this);
+
     if(typeof opts === 'string') opts = { storeName: otps };
 
     opts = opts || {};
@@ -20,7 +24,7 @@ var Storage = module.exports = function(opts) {
     opts.indexes = opts.indexes || [];
     opts.indexes.push({ name: 'type', keyPath: 'type', unique: false, multiEntry: false });
 
-    //put outselves as the ready callback, but save the user's too
+    //put outselves as the ready callback, but store the user's too
     this.rdyCb = opts.onStoreReady || opts.onReady;
     opts.onStoreReady = this._onReady.bind(this);
 
@@ -36,6 +40,8 @@ var Storage = module.exports = function(opts) {
     //connect to IDB store
     this.store = new IDBStore(opts);
 };
+
+util.inherits(Storage, events.EventEmitter);
 
 /****************************
     Loading Functions
@@ -77,39 +83,39 @@ Storage.prototype.loadItems = function(ids, cb) {
     }
 };
 
-Storage.prototype.loadPlayer = function(id, cb) {
+Storage.prototype.loadPlayer = function(cb) {
     // body...
 };
 
-Storage.prototype.loadGame = function(id, cb) {
+Storage.prototype.loadGame = function(cb) {
     // body...
 };
 
 /****************************
-    Saving Functions
+    Storing Functions
 */
 
-Storage.prototype.saveChunk = function(chunk, cb) {
+Storage.prototype.storeChunk = function(chunk, cb) {
     // body...
 };
 
-Storage.prototype.saveChunks = function(chunks, cb) {
+Storage.prototype.storeChunks = function(chunks, cb) {
     // body...
 };
 
-Storage.prototype.saveItem = function(item, cb) {
+Storage.prototype.storeItem = function(item, cb) {
     // body...
 };
 
-Storage.prototype.saveItems = function(items, cb) {
+Storage.prototype.storeItems = function(items, cb) {
     // body...
 };
 
-Storage.prototype.savePlayer = function(player, cb) {
+Storage.prototype.storePlayer = function(player, cb) {
     // body...
 };
 
-Storage.prototype.saveGame = function(game, cb) {
+Storage.prototype.storeGame = function(game, cb) {
     // body...
 };
 
@@ -118,7 +124,7 @@ Storage.prototype.saveGame = function(game, cb) {
 */
 
 //ready callback for IDBStore
-Store.prototype._onReady = function() {
+Storage.prototype._onReady = function() {
     this.ready = true;
 
     //process the queue
