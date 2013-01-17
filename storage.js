@@ -30,7 +30,7 @@ var Storage = module.exports = function(opts) {
 
     //same as above but for the error callback
     this.errCb = opts.onStoreError || opts.onError;
-    opts.onError = this._onError.bind(this);
+    opts.onError = this._onError.bind(this, this.errCb);
 
     //queue calls to the database that happen before we are
     //actually ready to interact with the store
@@ -48,7 +48,7 @@ util.inherits(Storage, events.EventEmitter);
 */
 
 Storage.prototype.loadChunk = function(id, cb) {
-    // body...
+    this._load('chunk', id, cb);
 };
 
 Storage.prototype.loadChunks = function(ids, cb) {
@@ -57,16 +57,12 @@ Storage.prototype.loadChunks = function(ids, cb) {
         ids = null;
     }
 
-    if(!ids) {
-        //return all chunks
-    }
-    else {
-        //load each ID
-    }
+    //load each chunk within the IDs passed
+    this._loadEach('chunk', ids, cb);
 };
 
 Storage.prototype.loadItem = function(id, cb) {
-    // body...
+    this._load('item', id, cb);
 };
 
 Storage.prototype.loadItems = function(ids, cb) {
@@ -75,20 +71,16 @@ Storage.prototype.loadItems = function(ids, cb) {
         ids = null;
     }
 
-    if(!ids) {
-        //return all items
-    }
-    else {
-        //load each ID
-    }
+    //load each item within the IDs passed
+    this._loadEach('item', ids, cb);
 };
 
 Storage.prototype.loadPlayer = function(cb) {
-    // body...
+    this._load('player', 'player', cb);
 };
 
 Storage.prototype.loadGame = function(cb) {
-    // body...
+    throw 'Not yet implemented!';
 };
 
 /****************************
@@ -96,32 +88,117 @@ Storage.prototype.loadGame = function(cb) {
 */
 
 Storage.prototype.storeChunk = function(chunk, cb) {
-    // body...
+    this._store('chunk', chunk.position.join('|'), chunk, cb);
 };
 
 Storage.prototype.storeChunks = function(chunks, cb) {
-    // body...
+    this._storeEach('chunk', chunks, cb);
 };
 
 Storage.prototype.storeItem = function(item, cb) {
-    // body...
+    this._store('item', item.position.join('|'), item, cb);
 };
 
 Storage.prototype.storeItems = function(items, cb) {
-    // body...
+    this._storeEach('item', items, cb);
 };
 
 Storage.prototype.storePlayer = function(player, cb) {
-    // body...
+    this._store('player', 'player', player, cb);
 };
 
 Storage.prototype.storeGame = function(game, cb) {
-    // body...
+    throw 'Not yet implemented!';
 };
 
 /****************************
     Private and Helper Functions
 */
+
+Storage.prototype._load = function(type, id, cb) {
+    this.store.get(
+        type + '_' + id,
+        function(data) {
+            self.emit(type + 'Loaded', data)
+            if(cb) cb(null, data);
+        },
+        this._onError.bind(this, cb)
+    );
+};
+
+Storage.prototype._loadEach = function(type, ids, cb) {
+    if(typeof ids === 'function') {
+        cb = ids;
+        ids = null;
+    }
+
+    var self = this,
+        res = [];
+
+    ids = ids || [];
+
+    //return all entries of a certain type
+    this.store.iterate(
+        function(data, cursor, trans) {
+            //done iterating
+            if(data === null) {
+                self.emit(type + 'sLoaded', res);
+                if(cb) cb(null, res);
+            } else {
+                if(!ids || ids.indexOf(data.id)) {
+                    res.push(data);
+                    self.emit(type + 'Loaded', data);
+                }
+            }
+        },
+        {
+            index: 'type',
+            keyRange: IDBKeyRange.only(type),
+            //order: '',
+            //filterDuplicates: '',
+            //writeAccess: '',
+            onError: this._onError.bind(this, cb)
+        }
+    );
+};
+
+Storage.prototype._store = function(type, id, value, cb) {
+    this.store.put(
+        {
+            id: type + '_' + id,
+            type: type,
+            value: value
+        },
+        function(id) {
+            self.emit(type + 'Stored', id);
+            if(cb) cb(null, id);
+        },
+        this._onError.bind(this, cb)
+    });
+};
+
+Storage.prototype._storeEach = function(type, values, cb) {
+    var actions = [];
+    for(var i = 0, il = values.length; i < il; ++i) {
+        actions.push({
+            type: 'put',
+            value: {
+                id: type + '_' + values[i].position.join('|'),
+                type: type,
+                value: values[i]
+            }
+        });
+    }
+
+    this.store.batch(
+        actions,
+        function() {
+            self.emit(type + 'sStored');
+            if(cb) cb()
+        },
+        this._onError.bind(this, cb);
+    );
+};
 
 //ready callback for IDBStore
 Storage.prototype._onReady = function() {
@@ -137,10 +214,9 @@ Storage.prototype._onReady = function() {
 };
 
 //error callback for IDBStore
-Storage.prototype._onError = function(err) {
-    //should I be doing more than this?
-    if(this.errCb) this.errCb(err);
-    else throw err;
+Storage.prototype._onError = function(cb, err) {
+    this.emit('error', err);
+    if(cb) cb(err);
 };
 
 //queue an action to be processed later (on ready)
