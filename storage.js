@@ -6,7 +6,7 @@ var events = require('events'),
 var Storage = module.exports = function(opts) {
     events.EventEmitter.call(this);
 
-    if(typeof opts === 'string') opts = { storeName: otps };
+    if(typeof opts === 'string') opts = { storeName: opts };
 
     opts = opts || {};
 
@@ -116,6 +116,7 @@ Storage.prototype.storeGame = function(game, cb) {
 */
 
 Storage.prototype._load = function(type, id, cb) {
+    var self = this
     this.store.get(
         type + '_' + id,
         function(data) {
@@ -163,6 +164,7 @@ Storage.prototype._loadEach = function(type, ids, cb) {
 };
 
 Storage.prototype._store = function(type, id, value, cb) {
+    var self = this
     this.store.put(
         {
             id: type + '_' + id,
@@ -174,10 +176,11 @@ Storage.prototype._store = function(type, id, value, cb) {
             if(cb) cb(null, id);
         },
         this._onError.bind(this, cb)
-    });
+    );
 };
 
 Storage.prototype._storeEach = function(type, values, cb) {
+    var self = this
     var actions = [];
     for(var i = 0, il = values.length; i < il; ++i) {
         actions.push({
@@ -196,7 +199,7 @@ Storage.prototype._storeEach = function(type, values, cb) {
             self.emit(type + 'sStored');
             if(cb) cb()
         },
-        this._onError.bind(this, cb);
+        this._onError.bind(this, cb)
     );
 };
 
