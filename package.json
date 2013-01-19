@@ -2,7 +2,7 @@
     "name" : "voxel-storage",
     "version" : "0.0.1",
     "description" : "store voxel worlds locally with IndexedDB",
-    "main" : "index.js",
+    "main" : "storage.js",
     "dependencies" : {
         "idb-wrapper": "0.3.x",
         "voxel": "0.0.x"
