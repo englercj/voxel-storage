@@ -2,18 +2,20 @@
     "name" : "voxel-storage",
     "version" : "0.0.1",
     "description" : "store voxel worlds locally with IndexedDB",
-    "main" : "storage.js",
     "dependencies" : {
-        "idb-wrapper": "0.3.x",
-        "voxel": "0.0.x"
+        "idb-wrapper": "0.3.x"
     },
     "devDependencies" : {
         "browserify" : "~1.17.1",
-        "voxel-engine" : "0.1.9"
+        "browservefy": "0.0.1",
+        "voxel-engine" : "0.2.9"
     },
     "repository" : {
         "type" : "git",
         "url" : "git://github.com/englercj/voxel-storage.git"
+    },
+    "scripts": {
+      "start": "browservefy demo/demo.js"
     },
     "homepage" : "https://github.com/englercj/voxel-storage",
     "keywords" : [
