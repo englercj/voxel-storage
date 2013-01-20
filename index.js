@@ -1,9 +1,12 @@
 var events = require('events'),
     util = require('util'),
-    voxel = require('voxel'),
     IDBStore = require('idb-wrapper');
 
-var Storage = module.exports = function(opts) {
+module.exports = function(opts) {
+  return new Storage(opts)
+}
+
+var Storage = function(opts) {
     events.EventEmitter.call(this);
 
     if(typeof opts === 'string') opts = { storeName: opts };
@@ -25,7 +28,7 @@ var Storage = module.exports = function(opts) {
     opts.indexes.push({ name: 'type', keyPath: 'type', unique: false, multiEntry: false });
 
     //put outselves as the ready callback, but store the user's too
-    this.rdyCb = opts.onStoreReady || opts.onReady;
+    this.rdyCb = opts.onReady;
     opts.onStoreReady = this._onReady.bind(this);
 
     //same as above but for the error callback
