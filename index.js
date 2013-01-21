@@ -28,7 +28,7 @@ var Storage = function(opts) {
     opts.indexes.push({ name: 'type', keyPath: 'type', unique: false, multiEntry: false });
 
     //put outselves as the ready callback, but store the user's too
-    this.rdyCb = opts.onReady;
+    this.rdyCb = opts.onStoreReady || opts.onReady;
     opts.onStoreReady = this._onReady.bind(this);
 
     //same as above but for the error callback
