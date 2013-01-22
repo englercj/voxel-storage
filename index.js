@@ -115,6 +115,53 @@ Storage.prototype.storeGame = function(game, cb) {
 };
 
 /****************************
+    Export/Import Functions
+*/
+
+Storage.prototype.export = function(emitProgress, cb) {
+    if(typeof emitProgress === 'function') {
+        cb = emitProgress;
+        emitProgress = false;
+    }
+
+    //create and return Data URI
+    var start = Date.now(),
+        self = this;
+
+    if(emitProgress) {
+        self.emit('exportProgress', 'counting', 0, Date.now() - start);
+        self.store.count(function(count) {
+            var items = [];
+            self.emit('exportProgress', 'loading', 0.10, Date.now() - start);
+            self.store.iterate(function(item) {
+                if(item) {
+                    items.push(item);
+                    //0.80 * prct, since loading is 80% of the job
+                    // + 0.10 because 10% is already done
+                    self.emit('exportProgress', 'loading', (0.80 * (items.length / count)) + 0.10, Date.now() - start);
+                }
+                else {
+                    self.emit('exportProgress', 'encoding', 0.90, Date.now() - start);
+                    var stuff = window.URL.createObjectURL(new Blob(items, { 'type': 'application/json' }));
+                    self.emit('exportProgress', null, 1, Date.now() - start, stuff);
+                    self.emit('exported', stuff);
+                    if(cb) cb(null, Date.now() - start, stuff);
+                }
+            });
+        });
+    } else {
+        self.store.getAll(function(data) {
+            var stuff = window.URL.createObjectURL(new Blob(data, { 'type': 'application/json' }));
+            self.emit('exported', stuff);
+            if(cb) cb(null, Date.now() - start, stuff);
+        }, function(err) {
+            if(cb) cb(err);
+            else throw err;
+        });
+    }
+};
+
+/****************************
     Private and Helper Functions
 */
 
