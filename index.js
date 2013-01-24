@@ -141,8 +141,8 @@ Storage.prototype._load = function(type, id, cb) {
     this.store.get(
         type + '_' + id,
         function(data) {
-            self.emit(type + 'Loaded', data)
-            if(cb) cb(null, data);
+            self.emit(type + 'Loaded', data.value)
+            if(cb) cb(null, data.value);
         },
         this._onError.bind(this, cb)
     );
@@ -167,9 +167,9 @@ Storage.prototype._loadEach = function(type, ids, cb) {
                 self.emit(type + 'sLoaded', res);
                 if(cb) cb(null, res);
             } else {
-                if(!ids || ids.indexOf(data.id)) {
-                    res.push(data);
-                    self.emit(type + 'Loaded', data);
+                if(!ids || ids.indexOf(data.id) !== -1) {
+                    res.push(data.value);
+                    self.emit(type + 'Loaded', data.value);
                 }
             }
         },
